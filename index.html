@@ -184,16 +184,16 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 /* ---------- Catálogos ---------- */
 const CHAINS = {
   TODAS:{name:"TODAS LAS CADENAS",short:"Todas",color:"#1e3a8a"},
-  PRIMAX:{name:"PRIMAX",short:"Primax",color:"#c8102e"},
+  PRIMAX:{name:"PRIMAX / LISTO",short:"Primax / Listo",color:"#c8102e"},
   REPSOL:{name:"REPSOL",short:"Repsol",color:"#ea580c"},
   TAMBO:{name:"TAMBO",short:"Tambo",color:"#db2777"},
   OXXO:{name:"OXXO",short:"Oxxo",color:"#dc2626"},
   AVA:{name:"AVA",short:"Ava",color:"#6d28d9"},
-  LISTO:{name:"LISTO",short:"Listo",color:"#d97706"},
   HERRAMIENTAS:{name:"APP Y HERRAMIENTAS",short:"Herramientas",color:"#0f766e"}
 };
-const ORDER = ["TODAS","PRIMAX","REPSOL","TAMBO","OXXO","AVA","LISTO","HERRAMIENTAS"];
-const PICK = ["PRIMAX","REPSOL","TAMBO","OXXO","AVA","LISTO"];
+const ORDER = ["TODAS","PRIMAX","REPSOL","TAMBO","OXXO","AVA","HERRAMIENTAS"];
+const PICK = ["PRIMAX","REPSOL","TAMBO","OXXO","AVA"];
+const ALIAS = {LISTO:"PRIMAX"}; // Listo es la tienda de Primax: se muestran juntos
 const TYPES = {
   NUEVO:{label:"NUEVO",c:"#15803d"}, IMPLEMENTAR:{label:"IMPLEMENTAR",c:"#1d4ed8"},
   RETIRAR:{label:"RETIRAR",c:"#b91c1c"}, REPORTAR:{label:"REPORTAR",c:"#b45309"},
@@ -201,6 +201,7 @@ const TYPES = {
   RECORDATORIO:{label:"RECORDATORIO",c:"#475569"}
 };
 const norm = s => (s||"").toString().normalize("NFD").replace(/[̀-ͯ]/g,"").trim().toUpperCase();
+const cad = r => { const c=norm(r.cadena)||"TODAS"; return ALIAS[c]||c; };
 
 /* ---------- Estado ---------- */
 let rows = [], cfg = {}, slides = [], i = 0, paused = false, voice = false, timer = null, tStart = 0, tDur = 0, tLeft = 0, raf = 0, sel = "TODAS", source = "";
@@ -253,15 +254,15 @@ function build(){
   const want = sel==="TODAS" ? ORDER : ["TODAS",sel,"HERRAMIENTAS"];
   slides=[];
   want.forEach(ch=>{
-    const items=rows.filter(r=>(norm(r.cadena)||"TODAS")===ch);
+    const items=rows.filter(r=>cad(r)===ch);
     if(!items.length) return;
     slides.push({cover:true,ch,items});
     items.forEach(r=>slides.push({ch,r}));
   });
   // cadenas que no están en el catálogo (por si agregan una nueva en la hoja)
   if(sel==="TODAS"){
-    const extra=[...new Set(rows.map(r=>norm(r.cadena)).filter(c=>c&&!ORDER.includes(c)))];
-    extra.forEach(ch=>{const items=rows.filter(r=>norm(r.cadena)===ch);slides.push({cover:true,ch,items});items.forEach(r=>slides.push({ch,r}));});
+    const extra=[...new Set(rows.map(cad).filter(c=>c&&!ORDER.includes(c)))];
+    extra.forEach(ch=>{const items=rows.filter(r=>cad(r)===ch);slides.push({cover:true,ch,items});items.forEach(r=>slides.push({ch,r}));});
   }
   slides.push({end:true,ch:"TODAS"});
 }
@@ -378,7 +379,7 @@ document.addEventListener("keydown",e=>{ if(!$("player").classList.contains("on"
 if("speechSynthesis" in window){ pickVoice(); try{ speechSynthesis.onvoiceschanged=pickVoice; }catch(e){} }
 
 /* ---------- Arranque ---------- */
-sel=store.get("anuncios.cadena")||"TODAS"; if(!["TODAS"].concat(PICK).includes(sel)) sel="TODAS";
+sel=store.get("anuncios.cadena")||"TODAS"; if(ALIAS[sel]) sel=ALIAS[sel]; if(!["TODAS"].concat(PICK).includes(sel)) sel="TODAS";
 voice=store.get("anuncios.voz")==="1" && ("speechSynthesis" in window); updVo();
 /* ---------- Acceso con DNI ----------
    acceso.js trae solo huellas PBKDF2 de los DNI (nunca los DNI). Se generan con generador.html.
