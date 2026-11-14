@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generador de acceso · Anuncios BAT</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:720px;margin:0 auto;padding:28px 20px;color:#0f172a;background:#f8fafc}
+h1{font-size:22px;margin-bottom:6px}
+p,li{font-size:14px;line-height:1.55;color:#334155}
+textarea{width:100%;min-height:200px;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;padding:12px;border:1px solid #cbd5e1;border-radius:10px;box-sizing:border-box}
+label{font-size:14px;font-weight:600}
+input[type=number]{width:80px;padding:6px;border:1px solid #cbd5e1;border-radius:8px}
+button{font:inherit;font-weight:700;padding:11px 18px;border-radius:10px;border:0;cursor:pointer;background:#1d4ed8;color:#fff;margin:12px 8px 0 0}
+button.sec{background:#e2e8f0;color:#0f172a}
+.box{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-top:18px}
+#out{white-space:pre-wrap;word-break:break-all;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;background:#0f172a;color:#e2e8f0;padding:12px;border-radius:10px;max-height:220px;overflow:auto}
+#msg{font-weight:700;margin-top:10px}
+.warn{background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:10px 12px;font-size:13px}
+</style>
+</head>
+<body>
+<h1>Generador de acceso por DNI</h1>
+<p>Pega los DNI de los usuarios (uno por línea; puedes pegar la lista con nombres, solo se toman los números de 8 dígitos). <b>Los DNI no salen de esta computadora</b>: aquí se convierten en huellas que no se pueden revertir, y solo esas huellas van a la web.</p>
+
+<textarea id="src" placeholder="Bruno Gutiérrez 12345678&#10;Carlos Clavo 87654321&#10;…"></textarea>
+<p><label>Días que dura la sesión en el celular: <input type="number" id="dias" value="30" min="1" max="365"></label></p>
+<button id="gen">Generar acceso.js</button>
+
+<div class="box" id="res" hidden>
+  <p id="msg"></p>
+  <div id="out"></div>
+  <button id="dl">Descargar acceso.js</button><button class="sec" id="cp">Copiar texto</button>
+  <ol>
+    <li>Reemplaza el archivo <b>acceso.js</b> de la carpeta de la web por este.</li>
+    <li>Súbelo a donde está publicada la web (GitHub, Netlify o Vercel).</li>
+    <li>Para dar de baja a alguien: quítalo de la lista y vuelve a generar. Su sesión se cierra sola.</li>
+  </ol>
+  <p class="warn">Cada vez que generas, todos deben volver a ingresar su DNI una vez. Guarda tu lista de DNI en un lugar privado: esta página no la guarda.</p>
+</div>
+
+<script>
+const ITER = 150000;
+const hex = b => [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+let texto = "";
+async function huella(dni, salt){
+  const enc=new TextEncoder();
+  const key=await crypto.subtle.importKey("raw",enc.encode(dni),"PBKDF2",false,["deriveBits"]);
+  return hex(await crypto.subtle.deriveBits({name:"PBKDF2",salt:enc.encode(salt),iterations:ITER,hash:"SHA-256"},key,256));
+}
+document.getElementById("gen").onclick = async () => {
+  const msg=document.getElementById("msg"), res=document.getElementById("res");
+  const dnis=[...new Set((document.getElementById("src").value.match(/(?<!\d)\d{8}(?!\d)/g)||[]))];
+  res.hidden=false;
+  if(!dnis.length){ msg.style.color="#b91c1c"; msg.textContent="No encontré DNI de 8 dígitos."; document.getElementById("out").textContent=""; return; }
+  if(!window.crypto||!crypto.subtle){ msg.style.color="#b91c1c"; msg.textContent="Este navegador no permite generar. Abre el archivo con Chrome."; return; }
+  msg.style.color="#0f172a"; msg.textContent="Generando "+dnis.length+" huellas…";
+  const salt=hex(crypto.getRandomValues(new Uint8Array(16)));
+  const hashes=[]; for(const d of dnis){ hashes.push(await huella(d,salt)); }
+  const dias=Math.max(1,Math.min(365,parseInt(document.getElementById("dias").value)||30));
+  texto="// Generado con generador.html el "+new Date().toLocaleString("es-PE")+". No contiene DNI, solo huellas.\n"+
+    "window.ACCESO = "+JSON.stringify({required:true,salt,iter:ITER,dias,hashes},null,1)+";\n";
+  document.getElementById("out").textContent=texto;
+  msg.style.color="#15803d"; msg.textContent="Listo: "+dnis.length+" usuarios con acceso.";
+};
+document.getElementById("dl").onclick=()=>{ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([texto],{type:"text/javascript"})); a.download="acceso.js"; a.click(); };
+document.getElementById("cp").onclick=async()=>{ try{ await navigator.clipboard.writeText(texto); document.getElementById("cp").textContent="Copiado ✓"; }catch(e){ document.getElementById("cp").textContent="Selecciona y copia a mano"; } };
+</script>
+</body>
+</html>

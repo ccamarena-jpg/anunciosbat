@@ -1,0 +1,23 @@
+ANUNCIOS DE LA SEMANA - PROMOTORIA BAT
+
+Que es: una web tipo "historias" (como video) que lee los anuncios desde la Google Sheet
+"Anuncios promotoría BAT (fuente del video)". Se edita la hoja y la web se actualiza sola al recargar.
+
+Para ponerla en linea (una sola vez):
+0. ACCESO CON DNI: abre generador.html en Chrome (doble clic), pega la lista de DNI de los usuarios,
+   pulsa Generar y descarga acceso.js. Reemplaza el acceso.js de esta carpeta por el descargado.
+   Sin este paso la web muestra "El acceso aun no esta configurado".
+   No subas tu lista de DNI a ningun lado: generador.html no la guarda ni la envia.
+1. En la Google Sheet: Compartir > Acceso general > "Cualquier persona con el enlace" > Lector.
+   (Sin esto la web no puede leerla y muestra los datos de respaldo de data.js.)
+2. Sube esta carpeta completa (index.html, data.js, img/) a GitHub Pages, Netlify o Vercel.
+   Ej. GitHub: repo nuevo > Upload files > Settings > Pages > Branch main.
+3. Comparte el link con los promotores o agregalo al app en "Novedades TT Audit".
+
+Para probar otra hoja sin tocar el codigo: tu-web/?sheet=ID_DE_LA_HOJA
+
+Imagenes: en la columna "imagen" puedes poner img/archivo.jpg (archivos de esta carpeta)
+o un enlace de Google Drive de una foto compartida con "Cualquier persona con el enlace".
+
+Sobre la seguridad del DNI: es un candado de entrada para que no entre cualquiera.
+No reemplaza un login real: quien conozca la ruta de las imagenes o el enlace de la Sheet puede verlas.

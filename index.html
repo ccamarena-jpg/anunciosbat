@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anuncios de la semana · Promotoría BAT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CONFIGURACIÓN: pega aquí el ID de tu Google Sheet
+   (lo que va entre /d/ y /edit en el enlace de la hoja).
+   La hoja debe estar compartida como "Cualquier persona con el enlace: Lector".
+   ============================================================ */
+</style>
+<script>
+window.SHEET_ID = "1S_AJks3SkBkGsl4ErwSA7rnZf8U7p2r7HMXIk5NsooU";            // ej. "1AbCdEf...". Vacío = usa los datos de respaldo (data.js)
+window.SHEET_TAB = "anuncios";   // pestaña con las tarjetas
+window.CONFIG_TAB = "config";    // pestaña con título, semana y mensaje de cierre
+</script>
+<script src="acceso.js"></script>
+<script src="data.js"></script>
+<style>
+:root{
+  --bg:#0b1020; --ink:#0f172a; --muted:#64748b; --card:#ffffff; --line:#e2e8f0;
+  --font:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--ink);-webkit-tap-highlight-color:transparent}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+.app{position:relative;height:100%;max-width:480px;margin:0 auto;overflow:hidden;background:#111827}
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.on{display:flex}
+
+/* ---------- Inicio ---------- */
+ /* ---------- Acceso ---------- */
+#gate{background:radial-gradient(120% 80% at 0% 0%,#1d4ed8 0%,#0b1020 55%);color:#fff;padding:40px 24px;justify-content:center}
+#gate .h1{font-size:28px}
+#gate p{opacity:.8;font-size:14px;line-height:1.5;margin-bottom:22px}
+#gate input{width:100%;font:inherit;font-size:22px;letter-spacing:.2em;text-align:center;padding:14px;border-radius:14px;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;outline:none}
+#gate input:focus{border-color:#facc15}
+#gateMsg{min-height:22px;margin-top:12px;font-size:14px;font-weight:700;color:#fca5a5}
+.logout{background:none;color:#fff;opacity:.6;font-size:12px;text-decoration:underline;margin-top:6px}
+#home{background:radial-gradient(120% 80% at 0% 0%,#1d4ed8 0%,#0b1020 55%);color:#fff;padding:28px 22px;overflow:auto}
+.brand{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.75;font-weight:700}
+.h1{font-size:34px;line-height:1.05;font-weight:800;margin:14px 0 8px}
+.week{display:inline-block;background:#fff;color:#0b1020;font-weight:800;border-radius:999px;padding:6px 14px;font-size:14px}
+.lbl{margin:26px 0 10px;font-size:13px;font-weight:700;opacity:.8}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.1);font-weight:700;font-size:14px;border:2px solid transparent}
+.chip.sel{background:#fff;color:#0b1020}
+.row{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.08);border-radius:14px;padding:12px 14px;margin-top:10px;font-weight:600;font-size:14px}
+.sw{width:46px;height:26px;border-radius:999px;background:rgba(255,255,255,.25);position:relative;transition:.2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on{background:#22c55e}.sw.on::after{left:23px}
+.play{margin-top:26px;width:100%;background:#facc15;color:#0b1020;font-weight:800;font-size:18px;padding:16px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:10px}
+.ghost{margin-top:10px;width:100%;background:rgba(255,255,255,.1);font-weight:700;padding:13px;border-radius:14px}
+.meta{margin-top:18px;font-size:12px;opacity:.6;line-height:1.5}
+
+/* ---------- Reproductor ---------- */
+#player{background:#000}
+.bars{position:absolute;top:0;left:0;right:0;display:flex;gap:3px;padding:10px 10px 0;z-index:5}
+.bar{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.3);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:#fff}
+.top{position:absolute;top:18px;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:8px 14px;z-index:5;color:#fff}
+.chain{font-weight:800;font-size:13px;letter-spacing:.08em;display:flex;align-items:center;gap:8px}
+.chain b{display:inline-block;width:10px;height:10px;border-radius:50%}
+.tbtns{display:flex;gap:4px}
+.ib{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.14);font-size:16px}
+.stage{position:absolute;inset:0;padding:74px 16px 18px;display:flex;flex-direction:column}
+.zone{position:absolute;top:70px;bottom:0;z-index:2}
+.zone.l{left:0;width:30%}.zone.r{right:0;width:30%}.zone.c{left:30%;width:40%}
+
+.card{position:relative;z-index:3;pointer-events:none;flex:1;display:flex;flex-direction:column;background:var(--card);border-radius:22px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.card .head{padding:18px 18px 14px;color:#fff}
+.tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.1em;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.95)}
+.ttl{font-size:25px;line-height:1.12;font-weight:800;margin-top:10px}
+.body{flex:1;overflow:hidden;padding:16px 18px 10px;display:flex;flex-direction:column;gap:10px}
+.body a,.pic{pointer-events:auto}
+.pt{display:flex;gap:10px;font-size:16.5px;line-height:1.35;font-weight:600;opacity:0;transform:translateY(10px);transition:opacity .45s,transform .45s}
+.pt.in{opacity:1;transform:none}
+.pt::before{content:"";flex:0 0 8px;height:8px;margin-top:8px;border-radius:50%;background:var(--accent)}
+.pic{margin-top:4px;border-radius:14px;overflow:hidden;border:1px solid var(--line);opacity:0;transition:opacity .6s;cursor:zoom-in;position:relative}
+.pic.in{opacity:1}
+.pic img{display:block;width:100%;height:auto}
+.pic span{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:700;padding:4px 8px;border-radius:8px}
+.src{padding:8px 18px 14px;font-size:11px;color:var(--muted);font-weight:600}
+.pop{animation:pop .5s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:none;opacity:1}}
+
+/* Portada de cadena */
+.cover{flex:1;border-radius:22px;display:flex;flex-direction:column;justify-content:flex-end;padding:30px 24px;color:#fff;position:relative;overflow:hidden;z-index:1}
+.cover .big{font-size:56px;font-weight:800;line-height:.95;letter-spacing:-.02em}
+.cover .sub{margin-top:12px;font-size:17px;font-weight:600;opacity:.9}
+.cover .n{position:absolute;top:24px;right:24px;font-size:120px;font-weight:800;opacity:.15;line-height:1}
+.cover ul{list-style:none;margin-top:18px;display:flex;flex-direction:column;gap:6px}
+.cover li{font-size:15px;font-weight:600;background:rgba(255,255,255,.16);padding:8px 12px;border-radius:10px}
+
+.pause{position:absolute;inset:0;display:none;place-items:center;z-index:4;pointer-events:none}
+.pause.on{display:grid}
+.pause div{background:rgba(0,0,0,.55);color:#fff;font-weight:800;padding:12px 20px;border-radius:999px}
+
+/* Lupa de imagen */
+#zoom{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;z-index:50;overflow:auto}
+#zoom.on{display:block}
+#zoom img{width:200%;max-width:none;display:block}
+#zoom button{position:fixed;top:12px;right:12px;width:44px;height:44px;border-radius:50%;background:#fff;color:#000;font-size:20px;font-weight:800}
+#zoom p{position:fixed;bottom:14px;left:0;right:0;text-align:center;color:#fff;font-size:12px;opacity:.7}
+
+/* Índice */
+#index{background:#f8fafc;overflow:auto}
+.ihead{position:sticky;top:0;background:#0b1020;color:#fff;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;z-index:2}
+.ihead h2{font-size:18px}
+.grp{padding:14px 16px 4px}
+.grp h3{font-size:12px;letter-spacing:.12em;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.grp h3 b{width:10px;height:10px;border-radius:50%;display:inline-block}
+.it{width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.it small{display:block;font-size:10px;font-weight:800;letter-spacing:.1em;margin-bottom:3px}
+.it strong{font-size:15px}
+.it p{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.4}
+.empty{color:#fff;text-align:center;padding:40px 20px;opacity:.8}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ACCESO -->
+  <section id="gate" class="screen">
+    <div class="brand">Promotoría BAT · TT Audit</div>
+    <div class="h1">Ingresa con tu DNI</div>
+    <p id="gateTxt">Escribe tu número de DNI para ver los anuncios de la semana.</p>
+    <form id="gateForm" autocomplete="off">
+      <input id="dni" type="password" inputmode="numeric" maxlength="12" placeholder="••••••••" aria-label="DNI">
+      <button class="play" type="submit" id="gateBtn">Entrar</button>
+    </form>
+    <div id="gateMsg"></div>
+  </section>
+
+  <!-- INICIO -->
+  <section id="home" class="screen">
+    <div class="brand" id="hSub">Promotoría BAT · TT Audit</div>
+    <div class="h1" id="hTitle">Anuncios de la semana</div>
+    <span class="week" id="hWeek">—</span>
+
+    <div class="lbl">¿Qué cadena visitas?</div>
+    <div class="chips" id="chips"></div>
+
+    <div class="row"><span>🔊 Leer en voz alta</span><button class="sw" id="voiceSw" aria-label="Voz"></button></div>
+
+    <button class="play" id="go">▶ Ver anuncios</button>
+    <button class="ghost" id="openIndex">☰ Ver todo en lista</button>
+    <p class="meta" id="hMeta">Cargando…</p>
+    <button class="logout" id="logout" hidden>Cerrar sesión</button>
+  </section>
+
+  <!-- REPRODUCTOR -->
+  <section id="player" class="screen">
+    <div class="bars" id="bars"></div>
+    <div class="top">
+      <div class="chain" id="chainName"><b></b><span></span></div>
+      <div class="tbtns">
+        <button class="ib" id="pp" aria-label="Pausa">⏸</button>
+        <button class="ib" id="vo" aria-label="Voz">🔇</button>
+        <button class="ib" id="close" aria-label="Cerrar">✕</button>
+      </div>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="zone l" id="zl"></div><div class="zone c" id="zc"></div><div class="zone r" id="zr"></div>
+    <div class="pause" id="pauseTag"><div>⏸ En pausa · toca para seguir</div></div>
+  </section>
+
+  <!-- ÍNDICE -->
+  <section id="index" class="screen">
+    <div class="ihead"><h2>Todos los anuncios</h2><button class="ib" id="closeIndex" style="background:rgba(255,255,255,.15)">✕</button></div>
+    <div id="list"></div>
+  </section>
+</div>
+
+<div id="zoom"><button id="zoomX">✕</button><img id="zoomImg" alt=""><p>Desliza para mover la imagen</p></div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- Catálogos ---------- */
+const CHAINS = {
+  TODAS:{name:"TODAS LAS CADENAS",short:"Todas",color:"#1e3a8a"},
+  PRIMAX:{name:"PRIMAX",short:"Primax",color:"#c8102e"},
+  REPSOL:{name:"REPSOL",short:"Repsol",color:"#ea580c"},
+  TAMBO:{name:"TAMBO",short:"Tambo",color:"#db2777"},
+  OXXO:{name:"OXXO",short:"Oxxo",color:"#dc2626"},
+  AVA:{name:"AVA",short:"Ava",color:"#6d28d9"},
+  LISTO:{name:"LISTO",short:"Listo",color:"#d97706"},
+  HERRAMIENTAS:{name:"APP Y HERRAMIENTAS",short:"Herramientas",color:"#0f766e"}
+};
+const ORDER = ["TODAS","PRIMAX","REPSOL","TAMBO","OXXO","AVA","LISTO","HERRAMIENTAS"];
+const PICK = ["PRIMAX","REPSOL","TAMBO","OXXO","AVA","LISTO"];
+const TYPES = {
+  NUEVO:{label:"NUEVO",c:"#15803d"}, IMPLEMENTAR:{label:"IMPLEMENTAR",c:"#1d4ed8"},
+  RETIRAR:{label:"RETIRAR",c:"#b91c1c"}, REPORTAR:{label:"REPORTAR",c:"#b45309"},
+  PROMO:{label:"PROMO / CONECTADOS",c:"#7e22ce"}, PRECIO:{label:"PRECIOS",c:"#0e7490"},
+  RECORDATORIO:{label:"RECORDATORIO",c:"#475569"}
+};
+const norm = s => (s||"").toString().normalize("NFD").replace(/[̀-ͯ]/g,"").trim().toUpperCase();
+
+/* ---------- Estado ---------- */
+let rows = [], cfg = {}, slides = [], i = 0, paused = false, voice = false, timer = null, tStart = 0, tDur = 0, tLeft = 0, raf = 0, sel = "TODAS", source = "";
+const $ = id => document.getElementById(id);
+const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
+
+/* ---------- Datos: Google Sheet o respaldo ---------- */
+function parseCSV(t){
+  const out=[];let r=[],f="",q=false;
+  for(let k=0;k<t.length;k++){const ch=t[k];
+    if(q){ if(ch=='"'){ if(t[k+1]=='"'){f+='"';k++;} else q=false; } else f+=ch; }
+    else if(ch=='"') q=true; else if(ch==','){r.push(f);f="";}
+    else if(ch=='\n'){r.push(f);out.push(r);r=[];f="";} else if(ch!='\r') f+=ch; }
+  if(f!==""||r.length){r.push(f);out.push(r);} return out;
+}
+function toObjs(t){const a=parseCSV(t);if(!a.length)return[];const h=a[0].map(x=>x.trim().toLowerCase());
+  return a.slice(1).filter(r=>r.some(c=>c.trim())).map(r=>Object.fromEntries(h.map((k,j)=>[k,(r[j]||"").trim()])));}
+async function fetchTab(id,tab,signal){
+  const u="https://docs.google.com/spreadsheets/d/"+encodeURIComponent(id)+"/gviz/tq?tqx=out:csv&headers=1&sheet="+encodeURIComponent(tab)+"&t="+Date.now();
+  const r=await fetch(u,{cache:"no-store",signal}); if(!r.ok) throw new Error(r.status); const t=await r.text();
+  if(/^\s*</.test(t)) throw new Error("not csv"); return toObjs(t);
+}
+function sheetId(){ try{const p=new URLSearchParams(location.search).get("sheet"); if(p) return p;}catch(e){} return window.SHEET_ID||""; }
+async function load(){
+  const id=sheetId();
+  if(id){
+    try{
+      const ctrl=new AbortController(); setTimeout(()=>ctrl.abort(),9000);
+      rows=await fetchTab(id,window.SHEET_TAB,ctrl.signal);
+      try{ (await fetchTab(id,window.CONFIG_TAB)).forEach(o=>{ if(o.clave) cfg[o.clave.toLowerCase()]=o.valor; }); }catch(e){}
+      source="Google Sheet";
+    }catch(e){ rows=[]; }
+  }
+  if(!rows.length){ rows=(window.FALLBACK_ROWS||[]).slice(); cfg=Object.assign({},window.FALLBACK_CONFIG||{}); source=id?"respaldo (no se pudo leer la hoja)":"respaldo"; }
+  rows=rows.filter(visible);
+}
+function parseDate(s){ s=(s||"").trim(); if(!s) return null; let m;
+  if((m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return new Date(+m[1],m[2]-1,+m[3],23,59);
+  if((m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/))){const y=+m[3]<100?2000+ +m[3]:+m[3];return new Date(y,m[2]-1,+m[1],23,59);}
+  if((m=s.match(/^Date\((\d+),(\d+),(\d+)/))) return new Date(+m[1],+m[2],+m[3],23,59);
+  return null; }
+function visible(r){ const a=norm(r.activo); if(a&&a!=="SI"&&a!=="SÍ"&&a!=="X"&&a!=="TRUE") return false;
+  if(!norm(r.titulo)) return false; const d=parseDate(r.vigente_hasta); return !d||d>=new Date(); }
+function imgUrl(s){ s=(s||"").trim(); if(!s) return ""; let m=s.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);
+  if(m) return "https://lh3.googleusercontent.com/d/"+m[1]+"=w1400"; return s; }
+const bullets = s => (s||"").split(/\s*\|\s*|\n+/).map(x=>x.trim()).filter(Boolean);
+
+/* ---------- Construir la secuencia ---------- */
+function build(){
+  const want = sel==="TODAS" ? ORDER : ["TODAS",sel,"HERRAMIENTAS"];
+  slides=[];
+  want.forEach(ch=>{
+    const items=rows.filter(r=>(norm(r.cadena)||"TODAS")===ch);
+    if(!items.length) return;
+    slides.push({cover:true,ch,items});
+    items.forEach(r=>slides.push({ch,r}));
+  });
+  // cadenas que no están en el catálogo (por si agregan una nueva en la hoja)
+  if(sel==="TODAS"){
+    const extra=[...new Set(rows.map(r=>norm(r.cadena)).filter(c=>c&&!ORDER.includes(c)))];
+    extra.forEach(ch=>{const items=rows.filter(r=>norm(r.cadena)===ch);slides.push({cover:true,ch,items});items.forEach(r=>slides.push({ch,r}));});
+  }
+  slides.push({end:true,ch:"TODAS"});
+}
+const chainInfo = ch => CHAINS[ch] || {name:ch,short:ch,color:"#334155"};
+
+/* ---------- Render ---------- */
+function esc(s){const d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML;}
+function renderBars(){ $("bars").innerHTML=slides.map(()=>'<div class="bar"><i></i></div>').join(""); }
+function setBars(){ [...$("bars").children].forEach((b,k)=>{b.firstChild.style.width=k<i?"100%":"0";}); }
+function show(k){
+  clearTimeout(timer); cancelAnimationFrame(raf); stopVoice();
+  i=Math.max(0,Math.min(k,slides.length-1)); setBars();
+  const s=slides[i], info=chainInfo(s.ch), st=$("stage");
+  $("chainName").querySelector("b").style.background=info.color;
+  $("chainName").querySelector("span").textContent = s.end ? "FIN" : info.name;
+  let dur, speech;
+  if(s.end){
+    st.innerHTML='<div class="cover pop" style="background:linear-gradient(160deg,#1e3a8a,#0b1020)"><div class="big">¡Listo!</div><div class="sub">'+esc(cfg.cierre||"Gracias, equipo")+'</div><ul><li>Toca ✕ para volver al inicio</li></ul></div>';
+    dur=6000; speech=(cfg.cierre||"Gracias equipo")+".";
+  } else if(s.cover){
+    const n=s.items.length;
+    st.innerHTML='<div class="cover pop" style="background:linear-gradient(160deg,'+info.color+',#0b1020 120%)"><div class="n">'+n+'</div><div class="big">'+esc(info.name)+'</div><div class="sub">'+n+(n==1?" anuncio":" anuncios")+'</div><ul>'+s.items.map(r=>'<li>'+esc(r.titulo)+'</li>').join("")+'</ul></div>';
+    dur=2600+n*500; speech=info.name.toLowerCase()+". "+n+(n==1?" anuncio.":" anuncios.");
+  } else {
+    const r=s.r, tp=TYPES[norm(r.tipo)]||{label:norm(r.tipo)||"AVISO",c:"#475569"}, bl=bullets(r.detalle), im=imgUrl(r.imagen);
+    st.innerHTML='<div class="card pop" style="--accent:'+info.color+'">'+
+      '<div class="head" style="background:'+info.color+'"><span class="tag" style="color:'+tp.c+'">'+esc(tp.label)+'</span><div class="ttl">'+esc(r.titulo)+'</div></div>'+
+      '<div class="body">'+bl.map(b=>'<div class="pt">'+linkify(b)+'</div>').join("")+
+      (im?'<div class="pic"><img alt="" src="'+esc(im)+'"><span>🔍 Ampliar</span></div>':"")+'</div>'+
+      (r.fuente?'<div class="src">Fuente: '+esc(r.fuente)+(r.vigente_hasta?' · vigente hasta '+esc(r.vigente_hasta):"")+'</div>':"")+'</div>';
+    const pts=[...st.querySelectorAll(".pt")]; pts.forEach((p,j)=>setTimeout(()=>p.classList.add("in"),350+j*650));
+    const pic=st.querySelector(".pic"); if(pic){ setTimeout(()=>pic.classList.add("in"),350+pts.length*650);
+      pic.addEventListener("click",e=>{e.stopPropagation();openZoom(im);}); pic.querySelector("img").onerror=()=>pic.remove(); }
+    dur=Math.min(22000, 3500 + bl.reduce((a,b)=>a+900+b.length*45,0) + (im?2500:0));
+    speech=tp.label.split(" /")[0].toLowerCase()+". "+r.titulo+". "+bl.join(". ")+".";
+  }
+  tDur=dur; tLeft=dur;
+  if(voice) speak(speech).then(()=>{ if(!paused) next(); }); else run();
+  if(paused) freeze();
+}
+function linkify(b){ return esc(b).replace(/((?:https?:\/\/)?(?:forms\.gle|[\w-]+\.github\.io|drive\.google\.com)[^\s<]*)/g,m=>'<a href="'+(m.startsWith("http")?m:"https://"+m)+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">'+m+'</a>'); }
+function run(){ tStart=performance.now(); timer=setTimeout(next,tLeft); tick(); }
+function tick(){ const b=$("bars").children[i]; if(!b) return; const el=(tDur-tLeft)+(performance.now()-tStart);
+  b.firstChild.style.width=Math.min(100,el/tDur*100)+"%"; raf=requestAnimationFrame(tick); }
+function next(){ if(i<slides.length-1) show(i+1); else { clearTimeout(timer); cancelAnimationFrame(raf); $("bars").lastChild.firstChild.style.width="100%"; } }
+function prev(){ show(i-1); }
+function freeze(){ clearTimeout(timer); cancelAnimationFrame(raf); tLeft=Math.max(0,tLeft-(performance.now()-tStart)); }
+function togglePause(){
+  paused=!paused; $("pauseTag").classList.toggle("on",paused); $("pp").textContent=paused?"▶":"⏸";
+  if(voice){ try{ paused?speechSynthesis.pause():speechSynthesis.resume(); }catch(e){} return; }
+  if(paused) freeze(); else run();
+}
+
+/* ---------- Voz (Web Speech API del navegador) ---------- */
+let esVoice=null;
+function pickVoice(){ try{ const vs=speechSynthesis.getVoices(); const pref=["es-PE","es-419","es-US","es-MX","es-CO","es-ES"];
+  esVoice=pref.map(l=>vs.find(v=>v.lang&&v.lang.replace("_","-")===l)).find(Boolean)||vs.find(v=>/^es/i.test(v.lang))||null; }catch(e){} }
+function sayable(t){ return t.replace(/S\/\s?([\d.,]+)/g,"$1 soles").replace(/\bPDV\b/g,"puntos de venta").replace(/\bpts\b/g,"puntos")
+  .replace(/\bLS\b/g,"Lucky Strike").replace(/(\d)K\b/g,"$1 K").replace(/\b1ª/g,"primera").replace(/\S*(?:\.gle|\.io|\.com)\S*/g,"").replace(/[·→|]/g,", "); }
+function speak(text){ return new Promise(res=>{
+  if(!("speechSynthesis" in window)){ voice=false; updVo(); run(); return; }
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(sayable(text)); u.lang=esVoice?esVoice.lang:"es-419"; if(esVoice) u.voice=esVoice; u.rate=1.02;
+    const token=i; u.onend=()=>{ if(token===i) setTimeout(res,700); }; u.onerror=()=>{ if(token===i) setTimeout(res,700); };
+    // barra de progreso aproximada mientras habla
+    tDur=Math.max(3000,text.length*68); tLeft=tDur; tStart=performance.now(); tick();
+    speechSynthesis.speak(u);
+  }catch(e){ run(); }
+});}
+function stopVoice(){ try{ speechSynthesis.cancel(); }catch(e){} }
+function updVo(){ $("vo").textContent=voice?"🔊":"🔇"; $("voiceSw").classList.toggle("on",voice); }
+
+/* ---------- Lupa ---------- */
+function openZoom(src){ if(!paused) togglePause(); $("zoomImg").src=src; $("zoom").classList.add("on"); }
+$("zoomX").onclick=()=>{ $("zoom").classList.remove("on"); };
+
+/* ---------- Pantallas ---------- */
+function screen(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id)); }
+function start(from){ build(); renderBars(); paused=false; $("pauseTag").classList.remove("on"); $("pp").textContent="⏸"; screen("player"); show(from||0); }
+function stop(){ clearTimeout(timer); cancelAnimationFrame(raf); stopVoice(); screen("home"); }
+
+function renderHome(){
+  $("hTitle").textContent=cfg.titulo||"Anuncios de la semana";
+  $("hSub").textContent=cfg.subtitulo||"Promotoría BAT · TT Audit";
+  $("hWeek").textContent=cfg.semana||new Date().toLocaleDateString("es-PE",{day:"numeric",month:"long"});
+  const opts=["TODAS"].concat(PICK);
+  $("chips").innerHTML=opts.map(c=>'<button class="chip'+(c===sel?" sel":"")+'" data-c="'+c+'">'+(c==="TODAS"?"Todas":chainInfo(c).short)+'</button>').join("");
+  $("chips").querySelectorAll(".chip").forEach(b=>b.onclick=()=>{ sel=b.dataset.c; store.set("anuncios.cadena",sel); renderHome(); });
+  build(); const n=slides.filter(s=>s.r).length;
+  $("hMeta").textContent=n+" anuncios "+(sel==="TODAS"?"en total":"para "+chainInfo(sel).short+" (incluye los de todas las cadenas y herramientas)")+". Fuente de datos: "+source+".";
+}
+function renderIndex(){
+  build(); let html="";
+  slides.filter(s=>s.cover).forEach(c=>{ const info=chainInfo(c.ch);
+    html+='<div class="grp"><h3><b style="background:'+info.color+'"></b>'+esc(info.name)+'</h3>'+
+    c.items.map(r=>{ const k=slides.findIndex(s=>s.r===r); const tp=TYPES[norm(r.tipo)]||{label:r.tipo,c:"#475569"};
+      return '<button class="it" data-k="'+k+'"><small style="color:'+tp.c+'">'+esc(tp.label)+'</small><strong>'+esc(r.titulo)+'</strong><p>'+bullets(r.detalle).map(esc).join(" · ")+'</p></button>'; }).join("")+'</div>'; });
+  $("list").innerHTML=html||'<p class="empty">No hay anuncios vigentes.</p>';
+  $("list").querySelectorAll(".it").forEach(b=>b.onclick=()=>start(+b.dataset.k));
+}
+
+/* ---------- Eventos ---------- */
+$("go").onclick=()=>{ if(!rows.length) return; start(0); };
+$("openIndex").onclick=()=>{ renderIndex(); screen("index"); };
+$("closeIndex").onclick=()=>screen("home");
+$("close").onclick=stop;
+$("pp").onclick=togglePause;
+$("zl").onclick=prev; $("zr").onclick=next; $("zc").onclick=togglePause;
+$("voiceSw").onclick=()=>{ voice=!voice; store.set("anuncios.voz",voice?"1":"0"); updVo(); };
+$("vo").onclick=()=>{ voice=!voice; store.set("anuncios.voz",voice?"1":"0"); updVo(); show(i); };
+let tx=0; $("player").addEventListener("touchstart",e=>{tx=e.touches[0].clientX;},{passive:true});
+$("player").addEventListener("touchend",e=>{const dx=e.changedTouches[0].clientX-tx; if(Math.abs(dx)>60){ dx<0?next():prev(); }},{passive:true});
+document.addEventListener("keydown",e=>{ if(!$("player").classList.contains("on")) return;
+  if(e.key==="ArrowRight") next(); else if(e.key==="ArrowLeft") prev(); else if(e.key===" "){e.preventDefault();togglePause();} else if(e.key==="Escape") stop(); });
+if("speechSynthesis" in window){ pickVoice(); try{ speechSynthesis.onvoiceschanged=pickVoice; }catch(e){} }
+
+/* ---------- Arranque ---------- */
+sel=store.get("anuncios.cadena")||"TODAS"; if(!["TODAS"].concat(PICK).includes(sel)) sel="TODAS";
+voice=store.get("anuncios.voz")==="1" && ("speechSynthesis" in window); updVo();
+/* ---------- Acceso con DNI ----------
+   acceso.js trae solo huellas PBKDF2 de los DNI (nunca los DNI). Se generan con generador.html.
+   Ojo: es un candado de entrada, no seguridad real (los archivos y la Sheet siguen siendo accesibles por enlace). */
+const ACC = window.ACCESO || null;
+const hex = b => [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+async function huella(dni){
+  const enc=new TextEncoder();
+  const key=await crypto.subtle.importKey("raw",enc.encode(dni),"PBKDF2",false,["deriveBits"]);
+  return hex(await crypto.subtle.deriveBits({name:"PBKDF2",salt:enc.encode(ACC.salt),iterations:ACC.iter,hash:"SHA-256"},key,256));
+}
+function sesionValida(){ try{ const o=JSON.parse(store.get("anuncios.acceso")||"null"); return !!(o&&o.exp>Date.now()&&ACC.hashes.includes(o.h)); }catch(e){ return false; } }
+let fallos=0, bloqueo=0;
+function abrir(){ $("logout").hidden=!(ACC&&ACC.required); screen("home"); $("hMeta").textContent="Cargando…"; load().then(renderHome); }
+$("gateForm").addEventListener("submit",async e=>{
+  e.preventDefault(); const msg=$("gateMsg"); const dni=$("dni").value.replace(/\D/g,"");
+  if(Date.now()<bloqueo){ msg.textContent="Demasiados intentos. Espera unos segundos."; return; }
+  if(dni.length<8){ msg.textContent="El DNI tiene 8 dígitos."; return; }
+  $("gateBtn").disabled=true; msg.style.color="#fff"; msg.textContent="Verificando…";
+  try{
+    const h=await huella(dni);
+    if(ACC.hashes.includes(h)){ store.set("anuncios.acceso",JSON.stringify({h,exp:Date.now()+(ACC.dias||30)*864e5})); $("dni").value=""; msg.textContent=""; abrir(); }
+    else { fallos++; if(fallos>=5){ bloqueo=Date.now()+30000; fallos=0; } msg.style.color="#fca5a5"; msg.textContent="DNI no registrado. Si es un error, avisa a tu supervisor."; }
+  }catch(err){ msg.style.color="#fca5a5"; msg.textContent="Tu navegador no pudo verificar el DNI. Abre la web con https."; }
+  $("gateBtn").disabled=false;
+});
+$("logout").onclick=()=>{ store.set("anuncios.acceso",""); $("gateMsg").textContent=""; screen("gate"); };
+
+if(!ACC || !ACC.required){ abrir(); }
+else if(!ACC.hashes || !ACC.hashes.length){ $("gateTxt").textContent="El acceso aún no está configurado. Pide a la administradora que cargue los DNI (generador.html)."; $("gateForm").hidden=true; screen("gate"); }
+else if(sesionValida()){ abrir(); }
+else { screen("gate"); setTimeout(()=>{ try{$("dni").focus();}catch(e){} },100); }
+})();
+</script>
+</body>
+</html>
